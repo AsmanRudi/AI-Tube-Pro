@@ -1,0 +1,378 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  email String @unique
+
+  password String
+
+  role Role @default(USER)
+
+  plan Plan @default(FREE)
+
+  credits Int @default(50)
+
+  status UserStatus @default(ACTIVE)
+
+  expireAt DateTime?
+
+  geminiApiKey String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+
+  channels Channel[]
+
+  creditHistory CreditHistory[]
+
+  apiUsages ApiUsage[]
+
+  payments Payment[]
+
+  subscriptions Subscription[]
+
+  invoices Invoice[]
+
+  notifications Notification[]
+}
+
+model Project {
+  id     Int           @id @default(autoincrement())
+  name   String
+  niche  String?
+  status ProjectStatus @default(DRAFT)
+
+  scripts Script[]
+
+  seoResults SeoResult[]
+
+  channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  userId Int
+  videos Video[]
+}
+
+model Script {
+  id Int @id @default(autoincrement())
+
+  title String
+
+  content String @db.Text
+
+  description String @db.Text
+
+  outline Json
+
+  tags    Json
+  keyword String
+
+  language String
+
+  duration String
+
+  createdAt DateTime @default(now())
+
+  projectId Int
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  videos Video[]
+
+  seoResults SeoResult[]
+}
+
+model Video {
+  id        Int     @id @default(autoincrement())
+  title     String
+  status    VideoStatus @default(DRAFT)
+  duration  Int?
+  youtubeId String?
+  thumbnail String?
+
+  keyword    String?
+  language   String?
+  durationText String?
+
+  thumbnailConcept Json?
+  voiceover        Json?
+  subtitle         Json?
+
+  publishStatus String  @default("NOT_READY")
+  readyAt       DateTime?
+  publishedAt   DateTime?
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  script   Script? @relation(fields: [scriptId], references: [id])
+  scriptId Int?
+
+  seoResult   SeoResult? @relation(fields: [seoResultId], references: [id])
+  seoResultId Int?
+
+  channel   Channel? @relation(fields: [channelId], references: [id])
+  channelId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([channelId])
+}
+
+model Channel {
+  id              Int      @id @default(autoincrement())
+  name            String
+  youtubeChannelId String?
+  description     String?
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  videos Video[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([userId])
+}
+
+enum ProjectStatus {
+  DRAFT
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum VideoStatus {
+  DRAFT
+  SCRIPT_GENERATED
+  SEO_GENERATED
+  THUMBNAIL_READY
+  VOICEOVER_READY
+  SUBTITLE_READY
+  READY_TO_UPLOAD
+  PUBLISHED
+  FAILED
+}
+
+model SeoResult {
+  id          Int      @id @default(autoincrement())
+  projectId   Int
+  scriptId    Int?
+  title       String
+  description String   @db.Text
+  tags        Json
+  hashtags    Json?
+  keywords    Json?
+  score       Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  script  Script? @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+
+  videos Video[]
+
+  @@index([projectId])
+  @@index([scriptId])
+}
+
+model CreditHistory {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  feature String
+
+  amount Int
+
+  type String
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model ApiUsage {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  endpoint String
+
+  feature String
+
+  prompt String @db.Text
+
+  responseTime Int
+
+  tokensUsed Int
+
+  creditsUsed Int
+
+  status String @default("SUCCESS")
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([feature])
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  externalId String?
+
+  gateway String?
+
+  amount Int
+
+  currency String @default("IDR")
+
+  status PaymentStatus @default(PENDING)
+
+  plan Plan?
+
+  credits Int @default(0)
+
+  paymentUrl String?
+
+  paidAt DateTime?
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Subscription {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  plan Plan
+
+  status String @default("ACTIVE")
+
+  price Int @default(0)
+
+  startedAt DateTime @default(now())
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Invoice {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  invoiceNumber String @unique
+
+  amount Int
+
+  currency String @default("IDR")
+
+  status PaymentStatus @default(PENDING)
+
+  description String?
+
+  dueDate DateTime?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  type String
+
+  title String
+
+  message String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+}
+

@@ -1,0 +1,2 @@
+src/services/script.service.ts(9,6): error TS2307: Cannot find module '../dto/CreateScriptDto' or its corresponding type declarations.
+src/services/seo.service.ts(107,13): error TS2353: Object literal may only specify known properties, and 'hashtags' does not exist in type 'SeoResultUncheckedCreateInput'.

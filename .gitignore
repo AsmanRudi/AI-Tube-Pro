@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment files (jangan commit rahasia!)
+.env
+.env.*
+!.env.example
+
+# Archives & large binary files (jangan commit zip/rar besar)
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Prisma (opsional)
+backend/prisma/*.db
