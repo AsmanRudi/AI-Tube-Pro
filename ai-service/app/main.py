@@ -107,10 +107,13 @@ def validate(
             "valid": True
         }
 
-    except Exception:
+    except HTTPException:
+        raise
+
+    except Exception as e:
 
         raise HTTPException(
             status_code=400,
-            detail="API key tidak valid"
+            detail=f"API key tidak valid: {str(e)}"
         )
 

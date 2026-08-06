@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Image, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Image,
+  Sparkles,
+  Copy,
+  Check,
+  Palette,
+  Lightbulb,
+  Wand2,
+  type LucideIcon,
+} from "lucide-react";
 import projectService from "@/services/project.service";
 import scriptService from "@/services/script.service";
 import thumbnailService from "@/services/thumbnail.service";
@@ -14,6 +24,13 @@ interface ProjectOption {
   name: string;
 }
 
+const STYLE_OPTIONS: { value: string; label: string }[] = [
+  { value: "professional", label: "Profesional" },
+  { value: "dramatic", label: "Dramatis" },
+  { value: "colorful", label: "Berwarna" },
+  { value: "minimalist", label: "Minimalis" },
+];
+
 export default function ThumbnailPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectOption[]>([]);
@@ -23,6 +40,7 @@ export default function ThumbnailPage() {
   const [style, setStyle] = useState("professional");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ThumbnailResult | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadProjects();
@@ -60,6 +78,7 @@ export default function ThumbnailPage() {
     if (!selectedScriptId) return;
     setLoading(true);
     setResult(null);
+    setCopied(false);
     try {
       const script = scripts.find((s) => s.id === Number(selectedScriptId));
       if (!script) return;
@@ -76,6 +95,17 @@ export default function ThumbnailPage() {
     }
   }
 
+  async function copyPrompt() {
+    if (!result) return;
+    try {
+      await navigator.clipboard.writeText(result.prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Gagal menyalin prompt:", err);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
@@ -87,8 +117,8 @@ export default function ThumbnailPage() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="text-3xl font-bold">Thumbnail Generator</h1>
-          <p className="mt-1 text-gray-500">Generate konsep thumbnail untuk video YouTube kamu.</p>
+          <h1 className="text-3xl font-bold">Generator Thumbnail</h1>
+          <p className="mt-1 text-gray-500">Hasilkan konsep thumbnail untuk video YouTube kamu.</p>
         </div>
       </div>
 
@@ -115,12 +145,11 @@ export default function ThumbnailPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Thumbnail Style</label>
+            <label className="text-sm font-medium">Gaya Thumbnail</label>
             <select className="mt-1 w-full rounded border p-3" value={style} onChange={(e) => setStyle(e.target.value)}>
-              <option value="professional">Professional</option>
-              <option value="dramatic">Dramatic</option>
-              <option value="colorful">Colorful</option>
-              <option value="minimalist">Minimalist</option>
+              {STYLE_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
             </select>
           </div>
 
@@ -130,39 +159,68 @@ export default function ThumbnailPage() {
             className="flex w-full items-center justify-center gap-2 rounded bg-purple-600 py-3 font-medium text-white hover:bg-purple-700 disabled:opacity-50"
           >
             <Sparkles size={18} />
-            {loading ? "Generating..." : "Generate Thumbnail Concept"}
+            {loading ? "Menghasilkan..." : "Hasilkan Konsep Thumbnail"}
           </button>
         </div>
       </div>
 
       {result && (
         <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="rounded-lg bg-purple-100 p-3 text-purple-600">
               <Image size={24} />
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-xl font-bold">{result.title}</h2>
-              <p className="text-sm text-gray-500">Style: {result.style}</p>
+              <p className="text-sm text-gray-500">
+                Gaya:{" "}
+                {STYLE_OPTIONS.find((s) => s.value === result.style)?.label ?? result.style}
+              </p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase">Visual Concept</h3>
-              <p className="mt-1">{result.description}</p>
+          <div className="space-y-5">
+            {/* Konsep Visual */}
+            <div className="rounded-lg border bg-gray-50 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-purple-700">
+                <Palette size={16} />
+                Konsep Visual
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-700">{result.description}</p>
             </div>
 
+            {/* Prompt Gambar AI */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase">AI Image Prompt</h3>
-              <div className="mt-1 rounded-lg bg-gray-50 p-4 text-sm font-mono">{result.prompt}</div>
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-purple-700">
+                  <Wand2 size={16} />
+                  Prompt Gambar AI
+                </h3>
+                <button
+                  onClick={copyPrompt}
+                  className="flex items-center gap-1 rounded border px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                >
+                  {copied ? (
+                    <><Check size={12} className="text-green-600" /> Tersalin</>
+                  ) : (
+                    <><Copy size={12} /> Salin</>
+                  )}
+                </button>
+              </div>
+              <div className="mt-2 whitespace-pre-wrap rounded-lg bg-gray-900 p-4 text-sm font-mono text-gray-100">
+                {result.prompt}
+              </div>
             </div>
 
+            {/* Tips Desain */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase">Design Tips</h3>
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-purple-700">
+                <Lightbulb size={16} />
+                Tips Desain
+              </h3>
               <ul className="mt-2 space-y-2">
                 {result.design_tips.map((tip, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-purple-500" />
                     {tip}
                   </li>

@@ -19,6 +19,19 @@ import {
   Sparkles,
   CheckCircle2,
   Loader2,
+ChevronDown,
+  ChevronUp,
+  ListOrdered,
+  ALargeSmall,
+  Tag,
+  Hash,
+  KeyRound,
+  Palette,
+  Wand2,
+  Clock,
+  Type,
+  Mic2,
+  BarChart3,
 } from "lucide-react";
 import projectService from "@/services/project.service";
 import videoService from "@/services/video.service";
@@ -87,8 +100,11 @@ export default function ProjectDetailPage() {
   const [newDuration, setNewDuration] = useState("5-7 menit");
   const [showNewForm, setShowNewForm] = useState(false);
 
-  // Thumbnail style
+// Thumbnail style
   const [thumbnailStyle, setThumbnailStyle] = useState("professional");
+
+  // Script accordion toggle
+  const [scriptOpen, setScriptOpen] = useState(true);
 
   // Channel management
   const [showChannelForm, setShowChannelForm] = useState(false);
@@ -665,22 +681,81 @@ export default function ProjectDetailPage() {
                   <FileText size={18} className="text-blue-600" />
                   1. Skrip (Script)
                 </h3>
-                {selectedVideo.script ? (
-                  <div className="space-y-3">
+{selectedVideo.script ? (
+                  <div className="space-y-4">
                     <div className="rounded-lg bg-blue-50 p-4">
                       <p className="font-medium">{selectedVideo.script.title}</p>
                       <p className="mt-1 text-sm text-gray-600">
                         {selectedVideo.script.keyword} &middot; {selectedVideo.script.language}
                       </p>
                     </div>
-                    <details>
-                      <summary className="cursor-pointer text-sm font-medium text-blue-600">
-                        Lihat script lengkap
+
+                    {/* Outline */}
+                    {Array.isArray(selectedVideo.script.outline) && selectedVideo.script.outline.length > 0 && (
+                      <div>
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-600">
+                          <ListOrdered size={14} />
+                          Garis Besar (Outline)
+                        </h4>
+                        <ol className="mt-2 space-y-1.5">
+                          {selectedVideo.script.outline.map((item, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-700">
+                                {i + 1}
+                              </span>
+                              {item}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+
+{/* Isi Script */}
+                    <details open={scriptOpen}>
+                      <summary
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setScriptOpen(!scriptOpen);
+                        }}
+                        className="flex cursor-pointer items-center gap-1 text-sm font-medium text-blue-600"
+                      >
+                        {scriptOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {scriptOpen ? "Sembunyikan script lengkap" : "Lihat script lengkap"}
                       </summary>
-                      <div className="mt-2 whitespace-pre-wrap rounded bg-gray-50 p-4 text-sm">
+                      <div className="mt-2 whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm leading-relaxed text-gray-800">
                         {selectedVideo.script.content}
                       </div>
                     </details>
+
+                    {/* Deskripsi */}
+                    {selectedVideo.script.description && (
+                      <div>
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-600">
+                          <ALargeSmall size={14} />
+                          Deskripsi
+                        </h4>
+                        <p className="mt-1 whitespace-pre-wrap rounded bg-gray-50 p-3 text-sm text-gray-700">
+                          {selectedVideo.script.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Tag */}
+                    {Array.isArray(selectedVideo.script.tags) && selectedVideo.script.tags.length > 0 && (
+                      <div>
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-600">
+                          <Tag size={14} />
+                          Tag
+                        </h4>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {selectedVideo.script.tags.map((tag, i) => (
+                            <span key={i} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <button
@@ -700,21 +775,92 @@ export default function ProjectDetailPage() {
                   <Search size={18} className="text-green-600" />
                   2. SEO
                 </h3>
-                {selectedVideo.seoResult ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-lg bg-green-50 p-4">
-                      <p className="font-medium">{selectedVideo.seoResult.title}</p>
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                        Score: {selectedVideo.seoResult.score ?? "N/A"}
+{selectedVideo.seoResult ? (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-green-50 p-4">
+                      <p className="flex-1 font-medium">{selectedVideo.seoResult.title}</p>
+                      <span className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                        <BarChart3 size={12} />
+                        Skor SEO: {selectedVideo.seoResult.score ?? "N/A"}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{selectedVideo.seoResult.description}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedVideo.seoResult.tags?.map((t, i) => (
-                        <span key={i} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
-                          {t}
+
+                    {/* Score progress bar */}
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">Skor Optimasi SEO</span>
+                        <span className="font-semibold text-green-700">
+                          {selectedVideo.seoResult.score != null && selectedVideo.seoResult.score >= 80
+                            ? "Sangat Baik"
+                            : selectedVideo.seoResult.score != null && selectedVideo.seoResult.score >= 60
+                            ? "Cukup Baik"
+                            : "Perlu Diperbaiki"}
                         </span>
-                      ))}
+                      </div>
+                      <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+                        <div
+                          className={`h-full rounded-full ${
+                            selectedVideo.seoResult.score != null && selectedVideo.seoResult.score >= 80
+                              ? "bg-green-500"
+                              : selectedVideo.seoResult.score != null && selectedVideo.seoResult.score >= 60
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          }`}
+                          style={{ width: `${selectedVideo.seoResult.score ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Deskripsi */}
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-green-600">
+                        <ALargeSmall size={14} />
+                        Deskripsi
+                      </h4>
+                      <p className="mt-1 whitespace-pre-wrap rounded bg-gray-50 p-3 text-sm leading-relaxed text-gray-700">
+                        {selectedVideo.seoResult.description}
+                      </p>
+                    </div>
+
+                    {/* Tag, Tagar, Kata Kunci */}
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="rounded-lg border bg-gray-50 p-3">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase text-blue-600">
+                          <Tag size={13} />
+                          Tag
+                        </h4>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {selectedVideo.seoResult.tags?.map((t, i) => (
+                            <span key={i} className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border bg-gray-50 p-3">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase text-green-600">
+                          <Hash size={13} />
+                          Tagar
+                        </h4>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {selectedVideo.seoResult.hashtags?.map((ht, i) => (
+                            <span key={i} className="text-xs text-green-700">{ht}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border bg-gray-50 p-3">
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase text-purple-600">
+                          <KeyRound size={13} />
+                          Kata Kunci
+                        </h4>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {selectedVideo.seoResult.keywords?.map((kw, i) => (
+                            <span key={i} className="rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -735,17 +881,55 @@ export default function ProjectDetailPage() {
                   <Image size={18} className="text-purple-600" />
                   3. Thumbnail
                 </h3>
-                {selectedVideo.thumbnailConcept ? (
-                  <div className="space-y-2">
+{selectedVideo.thumbnailConcept ? (
+                  <div className="space-y-4">
                     <div className="rounded-lg bg-purple-50 p-4">
                       <p className="font-medium">{selectedVideo.thumbnailConcept.title}</p>
-                      <p className="mt-1 text-sm text-gray-600">
+                      <p className="mt-1 text-xs text-gray-500">
+                        Gaya: {selectedVideo.thumbnailConcept.style}
+                      </p>
+                    </div>
+
+                    {/* Konsep Visual */}
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-purple-600">
+                        <Palette size={14} />
+                        Konsep Visual
+                      </h4>
+                      <p className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm leading-relaxed text-gray-700">
                         {selectedVideo.thumbnailConcept.description}
                       </p>
                     </div>
-                    <div className="rounded bg-gray-50 p-3 text-xs font-mono">
-                      {selectedVideo.thumbnailConcept.prompt}
+
+                    {/* Prompt Gambar AI */}
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-purple-600">
+                        <Wand2 size={14} />
+                        Prompt Gambar AI
+                      </h4>
+                      <pre className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-900 p-3 font-mono text-xs leading-relaxed text-gray-100">
+                        {selectedVideo.thumbnailConcept.prompt}
+                      </pre>
                     </div>
+
+                    {/* Tips Desain */}
+                    {Array.isArray(selectedVideo.thumbnailConcept.design_tips) &&
+                      selectedVideo.thumbnailConcept.design_tips.length > 0 && (
+                        <div>
+                          <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-purple-600">
+                            <Lightbulb size={14} />
+                            Tips Desain
+                          </h4>
+                          <ul className="mt-2 space-y-2">
+                            {selectedVideo.thumbnailConcept.design_tips.map((tip, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-purple-500" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-3">
@@ -777,11 +961,12 @@ export default function ProjectDetailPage() {
                   <Mic size={18} className="text-orange-600" />
                   4. Sulih Suara (Voiceover)
                 </h3>
-                {selectedVideo.voiceover ? (
-                  <div className="space-y-2">
+{selectedVideo.voiceover ? (
+                  <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-orange-50 p-3 text-center">
-                        <p className="text-xl font-bold text-orange-600">
+                        <p className="flex items-center justify-center gap-1 text-xl font-bold text-orange-600">
+                          <Clock size={16} />
                           {Math.floor(selectedVideo.voiceover.estimated_duration_seconds / 60)}:
                           {(selectedVideo.voiceover.estimated_duration_seconds % 60)
                             .toString()
@@ -790,12 +975,72 @@ export default function ProjectDetailPage() {
                         <p className="text-xs text-gray-500">Durasi</p>
                       </div>
                       <div className="rounded-lg bg-blue-50 p-3 text-center">
-                        <p className="text-xl font-bold text-blue-600">
+                        <p className="flex items-center justify-center gap-1 text-xl font-bold text-blue-600">
+                          <Type size={16} />
                           {selectedVideo.voiceover.word_count}
                         </p>
                         <p className="text-xs text-gray-500">Kata</p>
                       </div>
                     </div>
+
+                    {/* Gaya Suara */}
+                    {selectedVideo.voiceover.voice_style && (
+                      <div>
+                        <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-600">
+                          <Mic2 size={14} />
+                          Gaya Suara
+                        </h4>
+                        <p className="mt-1 rounded bg-gray-50 p-3 text-sm text-gray-700">
+                          {selectedVideo.voiceover.voice_style}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Segmen Script */}
+                    {Array.isArray(selectedVideo.voiceover.script_segments) &&
+                      selectedVideo.voiceover.script_segments.length > 0 && (
+                        <div>
+                          <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-600">
+                            <ListOrdered size={14} />
+                            Segmen Naskah ({selectedVideo.voiceover.script_segments.length})
+                          </h4>
+                          <div className="mt-2 max-h-64 space-y-2 overflow-y-auto rounded-lg border bg-gray-50 p-3">
+                            {selectedVideo.voiceover.script_segments.map((seg, i) => (
+                              <div key={i} className="rounded-md bg-white p-2.5">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] font-semibold text-gray-400">#{i + 1}</span>
+                                  <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-medium text-orange-700">
+                                    {seg.tone}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-sm text-gray-700">{seg.text}</p>
+                                <p className="mt-1 text-[10px] text-gray-400">
+                                  Durasi: {seg.duration_seconds} detik
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Tips Berbicara */}
+                    {Array.isArray(selectedVideo.voiceover.speaking_tips) &&
+                      selectedVideo.voiceover.speaking_tips.length > 0 && (
+                        <div>
+                          <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-600">
+                            <Lightbulb size={14} />
+                            Tips Berbicara
+                          </h4>
+                          <ul className="mt-2 space-y-2">
+                            {selectedVideo.voiceover.speaking_tips.map((tip, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500" />
+                                {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <button
@@ -815,27 +1060,48 @@ export default function ProjectDetailPage() {
                   <Subtitles size={18} className="text-teal-600" />
                   5. Subtitle
                 </h3>
-                {selectedVideo.subtitle ? (
-                  <div className="space-y-2">
-                    <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-medium text-teal-700">
-                      {selectedVideo.subtitle.total_segments} segmen &middot; {selectedVideo.subtitle.format}
-                    </span>
-                    <div className="mt-2 max-h-48 overflow-y-auto rounded bg-gray-50 p-3 font-mono text-xs">
-                      {selectedVideo.subtitle.segments.slice(0, 20).map((seg) => (
-                        <div key={seg.index} className="mb-1">
-                          <span className="text-gray-400">{seg.index} </span>
-                          <span className="text-gray-500">
-                            {seg.start_time} {" -> "} {seg.end_time}
-                          </span>{" "}
-                          {seg.text}
-                        </div>
-                      ))}
-                      {selectedVideo.subtitle.segments.length > 20 && (
-                        <p className="mt-1 text-gray-400">
-                          ... dan {selectedVideo.subtitle.segments.length - 20} segmen lainnya
-                        </p>
-                      )}
+{selectedVideo.subtitle ? (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-medium text-teal-700">
+                        {selectedVideo.subtitle.total_segments} segmen
+                      </span>
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                        Format: {selectedVideo.subtitle.format}
+                      </span>
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                        Bahasa: {selectedVideo.subtitle.language}
+                      </span>
                     </div>
+
+                    <div className="overflow-hidden rounded-lg border">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-teal-50 text-xs uppercase tracking-wide text-teal-700">
+                          <tr>
+                            <th className="px-3 py-2 font-semibold">No</th>
+                            <th className="px-3 py-2 font-semibold">Waktu</th>
+                            <th className="px-3 py-2 font-semibold">Teks</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {selectedVideo.subtitle.segments.slice(0, 20).map((seg) => (
+                            <tr key={seg.index} className="bg-white">
+                              <td className="px-3 py-2 text-xs font-medium text-gray-400">{seg.index}</td>
+                              <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-teal-600">
+                                {seg.start_time} → {seg.end_time}
+                              </td>
+                              <td className="px-3 py-2 text-gray-700">{seg.text}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {selectedVideo.subtitle.segments.length > 20 && (
+                      <p className="text-xs text-gray-400">
+                        ... dan {selectedVideo.subtitle.segments.length - 20} segmen lainnya
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <button

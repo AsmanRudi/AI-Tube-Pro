@@ -58,9 +58,12 @@ export class ApiKeyService {
                 message: result
             };
         } catch (error: any) {
+            // Tampilkan pesan error yang lebih informatif dari AI Service
+            const message = error.message || "API Key tidak valid";
+
             return {
                 valid: false,
-                message: error.message || "API Key tidak valid"
+                message
             };
         }
     }

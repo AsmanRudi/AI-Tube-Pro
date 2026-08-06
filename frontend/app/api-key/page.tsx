@@ -11,6 +11,7 @@ export default function ApiKeyPage() {
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
@@ -34,19 +35,21 @@ export default function ApiKeyPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    setValidating(true);
     setMessage(null);
     try {
       const data = await apiKeyService.save(apiKey);
       setStatus(data);
       setApiKey("");
-      setMessage({ type: "success", text: "API Key berhasil disimpan." });
+      setMessage({ type: "success", text: "API Key berhasil disimpan dan divalidasi." });
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: err.response?.data?.message || "Gagal menyimpan API Key",
+        text: err.response?.data?.message || "API Key tidak valid. Periksa kembali API Key Anda di Google AI Studio.",
       });
     } finally {
       setBusy(false);
+      setValidating(false);
     }
   }
 
@@ -195,7 +198,7 @@ export default function ApiKeyPage() {
             className="flex items-center gap-2 rounded bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
             {busy ? <Loader2 size={18} className="animate-spin" /> : <Key size={18} />}
-            Simpan API Key
+            {validating ? "Memvalidasi API Key..." : "Simpan API Key"}
           </button>
         </form>
       </div>

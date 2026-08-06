@@ -381,9 +381,18 @@ export class AIClient {
             return response.data.message || "API Key valid";
         } catch (error) {
             if (axios.isAxiosError(error)) {
+                const detail = error.response?.data?.detail;
+                const message = error.response?.data?.message;
+
+                // Jika AI Service mengembalikan detail error (misal model not found),
+                // tampilkan pesan yang lebih informatif
+                if (detail && detail.includes("API key tidak valid:")) {
+                    throw new Error(detail);
+                }
+
                 throw new Error(
-                    error.response?.data?.detail ||
-                    error.response?.data?.message ||
+                    detail ||
+                    message ||
                     "API Key tidak valid"
                 );
             }
