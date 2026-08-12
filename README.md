@@ -614,4 +614,38 @@ Project ini dibuat untuk keperluan portfolio dan pengembangan aplikasi.
 
 Jika project ini menarik atau bermanfaat, jangan lupa memberikan ⭐ pada repository.
 
+## 📸 Application Preview
+
+### Login
+
+![AI-Tube-Pro Dashboard](./docs/screenshots/login.png)
+
+### Dashboard
+
+![AI-Tube-Pro Dashboard](./docs/screenshots/dashboard.png)
+
+### AI Script Generator
+
+![AI Script Generator](./docs/screenshots/ai-script.png)
+
+### SEO Generator
+
+![SEO Generator](./docs/screenshots/seo.png)
+
+### Thumbnail Generator
+
+![Thumbnail Generator](./docs/screenshots/thumbnail.png)
+
+### Voiceover Generator
+
+![Thumbnail Generator](./docs/screenshots/voiceover.png)
+
+### Subtitle Generator
+
+![Thumbnail Generator](./docs/screenshots/subtitle.png)
+
+### Admin Dashboard
+
+![Admin Dashboard](./docs/screenshots/admin-dashboard.png)
+
 **Built with ❤️ for content creators.**
